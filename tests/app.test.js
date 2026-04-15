@@ -126,3 +126,49 @@ describe("GET /employees/:id/salary", () => {
     expect(res.status).toBe(404);
   });
 });
+
+// --- Salary Metrics ---
+
+describe("GET /metrics/country/:country", () => {
+  it("returns min, max, avg salary for a country", async () => {
+    await request(app).post("/employees").send({ ...emp, salary: 50000 });
+    await request(app).post("/employees").send({ ...emp, salary: 100000 });
+    await request(app).post("/employees").send({ ...emp, salary: 150000 });
+    const res = await request(app).get("/metrics/country/India");
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ min_salary: 50000, max_salary: 150000, avg_salary: 100000 });
+  });
+
+  it("returns correct values for single employee", async () => {
+    await request(app).post("/employees").send({ ...emp, salary: 75000 });
+    const res = await request(app).get("/metrics/country/India");
+    expect(res.body).toEqual({ min_salary: 75000, max_salary: 75000, avg_salary: 75000 });
+  });
+
+  it("returns 404 when no employees in country", async () => {
+    const res = await request(app).get("/metrics/country/Mars");
+    expect(res.status).toBe(404);
+  });
+});
+
+describe("GET /metrics/job-title/:jobTitle", () => {
+  it("returns avg salary for a job title", async () => {
+    await request(app).post("/employees").send({ ...emp, salary: 60000 });
+    await request(app).post("/employees").send({ ...emp, salary: 80000 });
+    const res = await request(app).get("/metrics/job-title/Engineer");
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ avg_salary: 70000 });
+  });
+
+  it("returns 404 when no employees with job title", async () => {
+    const res = await request(app).get("/metrics/job-title/Astronaut");
+    expect(res.status).toBe(404);
+  });
+
+  it("only includes employees with matching job title", async () => {
+    await request(app).post("/employees").send({ ...emp, job_title: "Engineer", salary: 100000 });
+    await request(app).post("/employees").send({ ...emp, job_title: "Manager", salary: 200000 });
+    const res = await request(app).get("/metrics/job-title/Engineer");
+    expect(res.body.avg_salary).toBe(100000);
+  });
+});
