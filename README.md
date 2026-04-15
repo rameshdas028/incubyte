@@ -1,26 +1,13 @@
 # Incubyte Salary Management
 
-A full-stack salary management application with a Node.js/Express API backend and React frontend.
-
-## Tech Stack
-
-- **Backend:** Node.js, Express, in-memory array storage
-- **Frontend:** React, Axios
+A Node.js/Express REST API for employee salary management with SQLite storage.
 
 ## Setup
 
-### Backend
 ```bash
-cd backend
 npm install
 npm start        # runs on http://localhost:3001
-```
-
-### Frontend
-```bash
-cd frontend
-npm install
-npm start        # runs on http://localhost:3000
+npm test         # runs test suite
 ```
 
 ## API Endpoints
@@ -52,3 +39,15 @@ npm start        # runs on http://localhost:3000
 | GET | `/metrics/country/:country` | Min, max, avg salary by country |
 | GET | `/metrics/job-title/:jobTitle` | Avg salary by job title |
 
+## Tech Stack
+
+- Node.js + Express
+- SQLite (better-sqlite3)
+- Jest + Supertest for testing
+
+## Implementation Details
+
+- AI tool used: Amazon Q in IDE
+- Used AI to scaffold Express routes, SQLite setup, and Jest test suite
+- TDD approach: tests written first covering CRUD, salary calculation (TDS rules), and metrics endpoints including edge cases (404s, missing fields, single employee metrics)
+- In-memory SQLite (`:memory:`) used in tests for isolation; file-based `salary.db` in production
