@@ -54,6 +54,20 @@ function createApp(db) {
     res.json({ employee_id: employee.id, gross_salary: gross, deductions: { tds }, net_salary: gross - tds });
   });
 
+  // --- Salary Metrics ---
+
+  app.get("/metrics/country/:country", (req, res) => {
+    const row = db.prepare("SELECT MIN(salary) as min_salary, MAX(salary) as max_salary, AVG(salary) as avg_salary FROM employees WHERE country = ?").get(req.params.country);
+    if (row.min_salary == null) return res.status(404).json({ error: "No employees found for this country" });
+    res.json(row);
+  });
+
+  app.get("/metrics/job-title/:jobTitle", (req, res) => {
+    const row = db.prepare("SELECT AVG(salary) as avg_salary FROM employees WHERE job_title = ?").get(req.params.jobTitle);
+    if (row.avg_salary == null) return res.status(404).json({ error: "No employees found for this job title" });
+    res.json(row);
+  });
+
   return app;
 }
 
