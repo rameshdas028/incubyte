@@ -96,3 +96,33 @@ describe("DELETE /employees/:id", () => {
     expect(res.status).toBe(404);
   });
 });
+
+// --- Salary Calculation ---
+
+describe("GET /employees/:id/salary", () => {
+  it("applies 10% TDS for India", async () => {
+    const created = await request(app).post("/employees").send({ ...emp, country: "India", salary: 100000 });
+    const res = await request(app).get(`/employees/${created.body.id}/salary`);
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ employee_id: created.body.id, gross_salary: 100000, deductions: { tds: 10000 }, net_salary: 90000 });
+  });
+
+  it("applies 12% TDS for United States", async () => {
+    const created = await request(app).post("/employees").send({ ...emp, country: "United States", salary: 100000 });
+    const res = await request(app).get(`/employees/${created.body.id}/salary`);
+    expect(res.body.deductions.tds).toBe(12000);
+    expect(res.body.net_salary).toBe(88000);
+  });
+
+  it("applies no deductions for other countries", async () => {
+    const created = await request(app).post("/employees").send({ ...emp, country: "Germany", salary: 50000 });
+    const res = await request(app).get(`/employees/${created.body.id}/salary`);
+    expect(res.body.deductions.tds).toBe(0);
+    expect(res.body.net_salary).toBe(50000);
+  });
+
+  it("returns 404 for non-existent employee", async () => {
+    const res = await request(app).get("/employees/999/salary");
+    expect(res.status).toBe(404);
+  });
+});
