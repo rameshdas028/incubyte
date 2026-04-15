@@ -40,6 +40,20 @@ function createApp(db) {
     res.status(204).send();
   });
 
+  // --- Salary Calculation ---
+
+  app.get("/employees/:id/salary", (req, res) => {
+    const employee = db.prepare("SELECT * FROM employees WHERE id = ?").get(req.params.id);
+    if (!employee) return res.status(404).json({ error: "Employee not found" });
+
+    const gross = employee.salary;
+    let tds = 0;
+    if (employee.country === "India") tds = gross * 0.1;
+    else if (employee.country === "United States") tds = gross * 0.12;
+
+    res.json({ employee_id: employee.id, gross_salary: gross, deductions: { tds }, net_salary: gross - tds });
+  });
+
   return app;
 }
 
